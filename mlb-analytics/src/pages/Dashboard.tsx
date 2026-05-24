@@ -118,7 +118,7 @@ export default function Dashboard() {
                 </h1>
 
                 <p className="mt-4 text-gray-300">
-                    Please check if backend is running at http://localhost:5000
+                    Please check if the backend API URL is configured correctly.
                 </p>
             </div>
         );
