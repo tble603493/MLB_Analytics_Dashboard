@@ -4,9 +4,29 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
-app.use(cors());
 
-const PORT = 5000;
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
+    : [];
+
+app.use(
+    cors({
+        origin(origin, callback) {
+            if (
+                !origin ||
+                allowedOrigins.length === 0 ||
+                allowedOrigins.includes(origin)
+            ) {
+                callback(null, true);
+                return;
+            }
+
+            callback(new Error("Not allowed by CORS"));
+        },
+    }),
+);
+
+const PORT = process.env.PORT || 5000;
 const DEFAULT_SOURCE_LIMIT = 10000;
 const MAX_SOURCE_LIMIT = 10000;
 const CURRENT_SEASON =
@@ -585,6 +605,10 @@ app.get("/", (req, res) => {
     res.send("MLB Backend is running");
 });
 
+app.get("/health", (req, res) => {
+    res.json({ status: "ok" });
+});
+
 app.get("/api/players", async (req, res) => {
     try {
         const page = getPositiveNumber(req.query.page, 1);
@@ -903,8 +927,8 @@ app.get("/api/teams/:id", async (req, res) => {
 
 ensureSchema()
     .then(() => {
-        app.listen(PORT, () => {
-            console.log(`Server running at http://localhost:${PORT}`);
+        app.listen(PORT, "0.0.0.0", () => {
+            console.log(`Server running on port ${PORT}`);
         });
     })
     .catch((error) => {
